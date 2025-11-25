@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Q&A - Hormone Lesson</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            max-width: 1400px;
+            width: 100%;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            color: #1f2937;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .header p {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .name-screen {
+            display: flex;
+            padding: 60px 40px;
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+        }
+
+        .name-screen h2 {
+            color: #111827;
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .name-screen p {
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        .name-input-container input {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 16px;
+            font-size: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .name-input-container input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .name-submit-btn {
+            margin-top: 16px;
+            padding: 12px 32px;
+            font-size: 15px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-family: inherit;
+        }
+
+        .name-submit-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .connecting-screen {
+            display: none;
+            padding: 60px 40px;
+            text-align: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+        }
+
+        .connecting-icon {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #e5e7eb;
+            border-top-color: #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .connecting-screen h2 {
+            color: #111827;
+            font-size: 22px;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .connecting-dots::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        .chat-container {
+            display: none;
+            flex-direction: row;
+            height: 100%;
+        }
+
+        .slide-panel {
+            width: 50%;
+            background: #fafafa;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .slide-image {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .slide-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .chat-panel {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            padding-bottom: 100px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.assistant {
+            justify-content: flex-start;
+            gap: 12px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.assistant .message-content {
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+        }
+
+        .message.user .message-content {
+            background: #10b981;
+            color: white;
+        }
+
+        .message.system {
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        .message.system .message-content {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+            background: #10b981;
+            align-self: flex-start;
+            color: white;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .avatar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 60px;
+        }
+
+        .avatar-info {
+            font-size: 9px;
+            color: #6b7280;
+            text-align: center;
+            line-height: 1.3;
+            max-width: 60px;
+        }
+
+        .avatar-name {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .avatar-location {
+            color: #9ca3af;
+        }
+
+        .input-area {
+            padding: 20px 24px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 10px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        #userInput:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        #sendBtn {
+            padding: 10px 24px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        #sendBtn:hover {
+            background: #059669;
+        }
+
+        #sendBtn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Hormone Lesson Q&A</h1>
+            <p>Chat with AI Assistant</p>
+        </div>
+
+        <div class="name-screen" id="nameScreen">
+            <h2>Welcome!</h2>
+            <p>Before we begin, please enter your name</p>
+            <div class="name-input-container">
+                <input type="text" id="nameInput" placeholder="Enter your name..." />
+                <button class="name-submit-btn" onclick="submitName()">Continue</button>
+            </div>
+        </div>
+
+        <div class="connecting-screen" id="connectingScreen">
+            <div class="connecting-icon"></div>
+            <h2>Connecting you to a chatbot</h2>
+            <div class="connecting-dots"></div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="slide-panel">
+                <div class="slide-image">
+                    <img id="lessonSlide" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%23ffffff'/%3E%3Ctext x='400' y='300' font-family='Arial' font-size='24' fill='%23333' text-anchor='middle'%3ESlide 1: Adrenal System%3C/text%3E%3C/svg%3E" alt="Lesson Slide" />
+                </div>
+            </div>
+
+            <div class="chat-panel">
+                <div class="messages" id="messages"></div>
+                <div class="input-area">
+                    <div class="input-container">
+                        <input type="text" id="userInput" placeholder="Type your question here..." />
+                        <button id="sendBtn" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        
+        // PASTE YOUR OPENAI API KEY HERE:
+        const OPENAI_API_KEY = 'PASTE_YOUR_API_KEY_HERE';
+        
+        // Google Sheets URL for logging (keep your existing one):
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_8wbcGRC6dYPuF16xIymOJC_YKwcCUsfd9qUMGcifhKBSo3c7yo7W4vsTk6S5hHAZ/exec';
+        
+        // ==================== STATE MANAGEMENT ====================
+        
+        let studentName = '';
+        let conversationLog = [];
+        let sessionStartTime = null;
+        let currentSlide = 1;
+        const totalSlides = 4;
+        let conversationHistory = []; // For OpenAI context
+        
+        const slideTopics = {
+            1: { name: "Adrenal System", section: "1" },
+            2: { name: "Thyroid System", section: "2" },
+            3: { name: "Pancreatic Regulation System", section: "3" },
+            4: { name: "Growth-Hormone System", section: "4" }
+        };
+        
+        // CSV Knowledge Base
+        const knowledgeBase = `
+SECTION 1 - ADRENAL SYSTEM:
+- Adrenal glands: These are two tiny organs that sit like "hats" on top of your kidneys. They've evolved to help humans survive danger. A long time ago, when people needed to run from predators or react quickly, these glands would release special hormones to speed up the body. They still do this today whenever you feel stress, excitement, or surprise.
+- Adrenaline: This is your body's "emergency helper." When something suddenly happens — like you're scared or need to move fast — adrenaline shoots into your blood. It makes your heart beat faster, sends more blood to your muscles, and sharpens your thinking. It started as a survival tool for early humans but now helps you react quickly in everyday situations.
+- Noradrenaline: This hormone works like adrenaline's partner. It tightens your blood vessels, which helps send blood where your body needs it most. It helps you stay alert, awake, and focused during stressful situations.
+- Cortisol: Cortisol helps your body deal with long-lasting stress, not just sudden moments. It controls how your body uses energy throughout the day. In the past, it helped humans survive hard conditions by managing hunger and keeping them alert. Today it helps your body wake up in the morning, handle challenges, and calm down afterward.
+- HPA axis: This is the communication line between: Hypothalamus, Pituitary gland, and Adrenal glands. It works like a "stress thermostat." When your brain senses stress, it sends messages to the adrenal glands to release cortisol. When there's enough, the brain tells them to stop. This system evolved so the body wouldn't use too much energy or stay stressed too long.
+- Negative feedback: This is your body's balancing trick. It means: "When there's enough of a hormone, stop making more." It prevents hormone levels from getting too high or too low — a system humans developed so their bodies could stay safe and stable in different environments.
+
+SECTION 2 - THYROID SYSTEM:
+- Thyroid gland: This small, butterfly-shaped gland in your neck controls how fast your body uses energy — your "metabolism speed." Humans developed this system to stay warm in cold climates and to use food efficiently. When the thyroid works correctly, you feel energetic, think clearly, and stay a comfortable temperature.
+- T3 and T4: These hormones set your body's "speed limit." If there's more: your body runs faster. If there's less: your body slows down. They control how warm you feel, how fast your heart beats, and how quickly you burn calories. These hormones helped early humans adapt to different environments by adjusting energy use.
+- Iodine: A mineral the thyroid needs to make T3 and T4. Over time, humans living near coasts got more iodine from salty foods, while inland areas often lacked it — which taught scientists how important iodine is for making thyroid hormones. You get it from foods like iodized salt, dairy, and seafood.
+- Pituitary gland: A pea-sized gland in your brain that acts like the "hormone boss." It watches hormone levels and tells glands when to make more or less. This helped ancient humans stay balanced in changing conditions like temperature, stress, and hunger.
+- TSH: This is the pituitary's "instruction message" to the thyroid. If your body needs more energy, pituitary sends more TSH. If there's enough, it sends less. It's another example of the body using signals to stay in balance.
+
+SECTION 3 - PANCREATIC REGULATION SYSTEM:
+- Pancreas: An organ near your stomach that helps with digestion and controls blood sugar. Humans evolved this system because stable blood sugar meant steady energy for walking, thinking, and hunting.
+- Insulin: A hormone that helps your cells "unlock" sugar from the blood. After you eat, your blood sugar rises. Insulin tells your cells: "Time to take in sugar and use it for energy." This helped humans survive by storing energy after meals.
+- Glucagon: The "opposite partner" to insulin. Glucagon tells your liver to release stored sugar when you haven't eaten for a while. This gave early humans a way to keep their brains working even during long periods without food.
+- Glucose homeostasis: This means keeping blood sugar steady — not too high or too low. Your body uses insulin and glucagon like a team to maintain balance. This balance was vital for human survival, because the brain needs a constant supply of glucose to work properly.
+
+SECTION 4 - GROWTH-HORMONE SYSTEM:
+- Growth hormone: A hormone made by the pituitary gland that helps bones, muscles, and tissues grow. During childhood, you have lots of it to help you grow taller. It also repairs your body after exercise or injury. Humans evolved this hormone to build strong bodies capable of movement, building, and hunting.
+- IGF-1: A molecule made in the liver that works with growth hormone to help bones and muscles grow. This teamwork ensured early humans could grow strong bones for walking long distances and strong muscles for survival tasks.
+- Hypothalamus: A tiny but powerful part of your brain that controls hunger, thirst, sleep, and hormones. It receives information about your body and decides when to tell the pituitary to release more or less growth hormone. This system helped humans adapt to different environments and energy levels.
+`;
+        
+        // ==================== OPENAI API CALL ====================
+        
+        async function callOpenAI(userQuestion) {
+            const systemPrompt = `You are Vera, a friendly and patient GenLM chatbot designed to help students understand the hormone lesson.
+
+CRITICAL RULES:
+1. You are currently teaching Section ${currentSlide}: ${slideTopics[currentSlide].name}
+2. ONLY answer questions about Section ${currentSlide}. If asked about other sections, say: "That's a great question! We'll cover that in the next section. Do you have another question about the ${slideTopics[currentSlide].name}?"
+3. Use ONLY the information from the knowledge base provided
+4. Keep answers clear and conversational
+5. After EVERY answer, end with: "Do you have another question about the ${slideTopics[currentSlide].name}? If you don't have a question for this part, just tell me 'no' or 'I don't have a question'."
+
+KNOWLEDGE BASE:
+${knowledgeBase}
+
+Current Section: ${currentSlide} - ${slideTopics[currentSlide].name}`;
+
+            const messages = [
+                { role: "system", content: systemPrompt },
+                ...conversationHistory,
+                { role: "user", content: userQuestion }
+            ];
+
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        max_tokens: 300,
+                        temperature: 0.7
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const answer = data.choices[0].message.content;
+                
+                // Update conversation history
+                conversationHistory.push({ role: "user", content: userQuestion });
+                conversationHistory.push({ role: "assistant", content: answer });
+                
+                return answer;
+            } catch (error) {
+                console.error('OpenAI API Error:', error);
+                return "I'm having trouble connecting right now. Could you try asking again?";
+            }
+        }
+        
+        // ==================== UI FUNCTIONS ====================
+        
+        function submitName() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+            
+            if (name === '') {
+                alert('Please enter your name to continue');
+                return;
+            }
+            
+            studentName = name;
+            startChat();
+        }
+        
+        function startChat() {
+            document.getElementById('nameScreen').style.display = 'none';
+            document.getElementById('connectingScreen').style.display = 'flex';
+            
+            sessionStartTime = new Date();
+            conversationLog.push({
+                timestamp: sessionStartTime.toISOString(),
+                event: 'session_start',
+                student_name: studentName,
+                condition: 'ai'
+            });
+            
+            setTimeout(() => {
+                document.getElementById('connectingScreen').style.display = 'none';
+                document.getElementById('chatContainer').style.display = 'flex';
+                
+                setTimeout(() => {
+                    addSystemMessage('You have been connected with an AI assistant: Vera');
+                    
+                    setTimeout(() => {
+                        addTypingMessage();
+                        
+                        setTimeout(() => {
+                            removeTypingMessage();
+                            const welcomeMessage = `Hi! My name is Vera, a GenLM chatbot designed to help you understand the hormone lesson. On the left side of your screen, you have Slide 1 covering the ${slideTopics[1].name}. Please let me know if you have any questions about this part. Feel free to ask me anything!`;
+                            addMessage(welcomeMessage, 'assistant');
+                        }, 5000);
+                    }, 4000);
+                }, 5000);
+            }, 5000);
+        }
+        
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            conversationLog.push({
+                timestamp: new Date().toISOString(),
+                sender: sender,
+                message: text
+            });
+            
+            if (sender === 'assistant') {
+                const avatarContainer = document.createElement('div');
+                avatarContainer.className = 'avatar-container';
+                
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.textContent = 'V';
+                
+                const avatarInfo = document.createElement('div');
+                avatarInfo.className = 'avatar-info';
+                avatarInfo.innerHTML = '<div class="avatar-name">Vera</div><div class="avatar-location">AI Assistant</div>';
+                
+                avatarContainer.appendChild(avatar);
+                avatarContainer.appendChild(avatarInfo);
+                messageDiv.appendChild(avatarContainer);
+            }
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function addSystemMessage(text) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function addTypingMessage() {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.id = 'tempTypingMessage';
+            
+            const avatarContainer = document.createElement('div');
+            avatarContainer.className = 'avatar-container';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = 'V';
+            
+            const avatarInfo = document.createElement('div');
+            avatarInfo.className = 'avatar-info';
+            avatarInfo.innerHTML = '<div class="avatar-name">Vera</div><div class="avatar-location">AI Assistant</div>';
+            
+            avatarContainer.appendChild(avatar);
+            avatarContainer.appendChild(avatarInfo);
+            messageDiv.appendChild(avatarContainer);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.style.fontStyle = 'italic';
+            contentDiv.style.color = '#666';
+            contentDiv.textContent = 'Vera typing...';
+            
+            messageDiv.appendChild(contentDiv);
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function removeTypingMessage() {
+            const typingMsg = document.getElementById('tempTypingMessage');
+            if (typingMsg) typingMsg.remove();
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            document.getElementById('sendBtn').disabled = true;
+            
+            // Check for "no" to move to next slide
+            const normalized = message.toLowerCase();
+            if (normalized === 'no' || normalized === 'nope' || normalized.includes("don't have a question") || normalized.includes("no question")) {
+                if (currentSlide < totalSlides) {
+                    setTimeout(() => {
+                        currentSlide++;
+                        conversationHistory = []; // Reset context for new section
+                        updateSlideImage();
+                        addSystemMessage(`Moving to Slide ${currentSlide}: ${slideTopics[currentSlide].name}`);
+                        
+                        setTimeout(() => {
+                            addTypingMessage();
+                            setTimeout(() => {
+                                removeTypingMessage();
+                                addMessage(`Great! Now you can see the slide on ${slideTopics[currentSlide].name}. Let me know if you have any questions about this part.`, 'assistant');
+                                document.getElementById('sendBtn').disabled = false;
+                            }, 3000);
+                        }, 2000);
+                    }, 1000);
+                } else {
+                    setTimeout(() => {
+                        addMessage("We've covered all four systems! Feel free to ask about any topic we discussed.", 'assistant');
+                        document.getElementById('sendBtn').disabled = false;
+                    }, 1000);
+                }
+                return;
+            }
+            
+            // Call OpenAI API
+            setTimeout(async () => {
+                addTypingMessage();
+                
+                const answer = await callOpenAI(message);
+                
+                setTimeout(() => {
+                    removeTypingMessage();
+                    addMessage(answer, 'assistant');
+                    document.getElementById('sendBtn').disabled = false;
+                    input.focus();
+                }, 5000);
+            }, 2000);
+        }
+        
+        function updateSlideImage() {
+            const slideImage = document.getElementById('lessonSlide');
+            slideImage.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect width='800' height='600' fill='%23ffffff'/%3E%3Ctext x='400' y='300' font-family='Arial' font-size='24' fill='%23333' text-anchor='middle'%3ESlide ${currentSlide}: ${slideTopics[currentSlide].name}%3C/text%3E%3C/svg%3E`;
+        }
+        
+        // Enter key to send
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !document.getElementById('sendBtn').disabled) {
+                    sendMessage();
+                }
+            });
+            
+            document.getElementById('nameInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitName();
+                }
+            });
+        });
+        
+        // Auto-save conversation
+        setInterval(() => {
+            if (conversationLog.length > 0) {
+                saveToGoogleSheets();
+            }
+        }, 30000);
+        
+        window.addEventListener('beforeunload', () => {
+            if (conversationLog.length > 0) {
+                saveToGoogleSheets();
+            }
+        });
+        
+        function saveToGoogleSheets() {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PASTE')) return;
+            
+            const sessionData = {
+                session_start: sessionStartTime.toISOString(),
+                student_name: studentName,
+                condition: 'ai',
+                duration_seconds: Math.floor((new Date() - sessionStartTime) / 1000),
+                messages: conversationLog.filter(log => log.sender === 'user' || log.sender === 'assistant')
+            };
+            
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sessionData)
+            }).catch(err => console.log('Save attempted'));
+        }
+    </script>
+</body>
+</html>
